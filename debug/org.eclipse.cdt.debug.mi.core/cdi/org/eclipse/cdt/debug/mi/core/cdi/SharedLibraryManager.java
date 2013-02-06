@@ -74,7 +74,7 @@ public class SharedLibraryManager extends Manager {
 		super(session, true);
 		sharedMap = new Hashtable();
 		autoLoadSet = new HashSet();
-		setAutoUpdate( MIPlugin.getDefault().getPluginPreferences().getBoolean( IMIConstants.PREF_SHARED_LIBRARIES_AUTO_REFRESH ) );
+		setAutoUpdate( false );
 	}
 
 	synchronized List getSharedList(Target target) {

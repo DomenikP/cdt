@@ -132,11 +132,10 @@ public class MIPlugin extends Plugin {
 	 * @deprecated
 	 */
 	@Deprecated
-	public MISession createMISession(MIProcess process, IMITTY pty, int type, String miVersion, IProgressMonitor monitor) throws MIException {
+	public MISession createMISession(MIProcess process, IMITTY pty, int type, String miVersion, IProgressMonitor monitor, int gdbLaunchTimeout, int gdbCommandTimeout) throws MIException {
 		MIPlugin miPlugin = getDefault();
-		Preferences prefs = miPlugin.getPluginPreferences();
-		int timeout = prefs.getInt(IMIConstants.PREF_REQUEST_TIMEOUT);
-		int launchTimeout = prefs.getInt(IMIConstants.PREF_REQUEST_LAUNCH_TIMEOUT);
+		int timeout = gdbCommandTimeout;
+		int launchTimeout = gdbLaunchTimeout;
 		return createMISession(process, pty, timeout, type, launchTimeout, miVersion, monitor);
 	}
 
@@ -154,7 +153,7 @@ public class MIPlugin extends Plugin {
 	 * @deprecated use <code>createSession</code>
 	 */
 	@Deprecated
-	public Session createCSession(String gdb, String miVersion, File program, File cwd, String gdbinit, IProgressMonitor monitor) throws IOException, MIException {
+	public Session createCSession(String gdb, String miVersion, File program, File cwd, String gdbinit, IProgressMonitor monitor, int gdbLaunchTimeout, int gdbCommandTimeout) throws IOException, MIException {
 		IMITTY pty = null;
 		boolean failed = false;
 
@@ -166,7 +165,7 @@ public class MIPlugin extends Plugin {
 		}
 
 		try {
-			return createCSession(gdb, miVersion, program, cwd, gdbinit, pty, monitor);
+			return createCSession(gdb, miVersion, program, cwd, gdbinit, pty, monitor, gdbLaunchTimeout,gdbCommandTimeout);
 		} catch (IOException exc) {
 			failed = true;
 			throw exc;
@@ -202,7 +201,7 @@ public class MIPlugin extends Plugin {
 	 * @deprecated use <code>createSession</code>
 	 */
 	@Deprecated
-	public Session createCSession(String gdb, String miVersion, File program, File cwd, String gdbinit, IMITTY pty, IProgressMonitor monitor) throws IOException, MIException {
+	public Session createCSession(String gdb, String miVersion, File program, File cwd, String gdbinit, IMITTY pty, IProgressMonitor monitor, int gdbLaunchTimeout, int gdbCommandTimeout) throws IOException, MIException {
 		if (gdb == null || gdb.length() == 0) {
 			gdb =  GDB;
 		}
@@ -228,8 +227,7 @@ public class MIPlugin extends Plugin {
 			}
 		}
 
-		int launchTimeout = MIPlugin.getDefault().getPluginPreferences().getInt(IMIConstants.PREF_REQUEST_LAUNCH_TIMEOUT);		
-		MIProcess pgdb = new MIProcessAdapter(args, launchTimeout, monitor);
+		MIProcess pgdb = new MIProcessAdapter(args, gdbLaunchTimeout, gdbCommandTimeout, monitor);
 
 		if (MIPlugin.DEBUG) {
 			StringBuffer sb = new StringBuffer();
@@ -242,7 +240,7 @@ public class MIPlugin extends Plugin {
 		
 		MISession session;
 		try {
-			session = createMISession(pgdb, pty, MISession.PROGRAM, miVersion, monitor);
+			session = createMISession(pgdb, pty, MISession.PROGRAM, miVersion, monitor, gdbLaunchTimeout, gdbCommandTimeout);
 		} catch (MIException e) {
 			pgdb.destroy();
 			throw e;
@@ -297,7 +295,7 @@ public class MIPlugin extends Plugin {
 		}
 
 		int launchTimeout = MIPlugin.getDefault().getPluginPreferences().getInt(IMIConstants.PREF_REQUEST_LAUNCH_TIMEOUT);		
-		MIProcess pgdb = new MIProcessAdapter(args, launchTimeout, monitor);
+		MIProcess pgdb = new MIProcessAdapter(args, launchTimeout, launchTimeout, monitor);
 		
 		if (MIPlugin.DEBUG) {
 			StringBuffer sb = new StringBuffer();
@@ -310,7 +308,7 @@ public class MIPlugin extends Plugin {
 		
 		MISession session;
 		try {
-			session = createMISession(pgdb, null, MISession.CORE, miVersion, monitor);
+			session = createMISession(pgdb, null, MISession.CORE, miVersion, monitor, launchTimeout, launchTimeout*2);
 			//@@@ We have to manually set the suspended state when doing post-mortem
 			session.getMIInferior().setSuspended();
 		} catch (MIException e) {
@@ -330,7 +328,7 @@ public class MIPlugin extends Plugin {
 	 * @deprecated use <code>createSession</code>
 	 */
 	@Deprecated
-	public Session createCSession(String gdb, String miVersion, File program, int pid, String[] targetParams, File cwd, String gdbinit, IProgressMonitor monitor) throws IOException, MIException {
+	public Session createCSession(String gdb, String miVersion, File program, int pid, String[] targetParams, File cwd, String gdbinit, IProgressMonitor monitor, int gdbLaunchTimeout, int gdbCommandTimeout) throws IOException, MIException {
 		if (gdb == null || gdb.length() == 0) {
 			gdb =  GDB;
 		}
@@ -348,8 +346,8 @@ public class MIPlugin extends Plugin {
 			args = new String[] {gdb, "--cd="+cwd.getAbsolutePath(), commandFile, "--quiet", "-nw", "-i", miVersion, program.getAbsolutePath()}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		}
 
-		int launchTimeout = MIPlugin.getDefault().getPluginPreferences().getInt(IMIConstants.PREF_REQUEST_LAUNCH_TIMEOUT);		
-		MIProcess pgdb = new MIProcessAdapter(args, launchTimeout, monitor);
+		int launchTimeout = gdbLaunchTimeout;
+		MIProcess pgdb = new MIProcessAdapter(args, launchTimeout, gdbCommandTimeout, monitor);
 		
 		if (MIPlugin.getDefault().isDebugging()) {
 			StringBuffer sb = new StringBuffer();
@@ -362,7 +360,7 @@ public class MIPlugin extends Plugin {
 		
 		MISession session;
 		try {
-			session = createMISession(pgdb, null, MISession.ATTACH, miVersion, monitor);
+			session = createMISession(pgdb, null, MISession.ATTACH, miVersion, monitor, gdbLaunchTimeout, gdbCommandTimeout);
 		} catch (MIException e) {
 			pgdb.destroy();
 			throw e;
