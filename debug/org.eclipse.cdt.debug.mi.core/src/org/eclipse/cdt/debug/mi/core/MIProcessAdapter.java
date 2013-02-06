@@ -31,12 +31,12 @@ public class MIProcessAdapter implements MIProcess {
 	private long commandTimeout;
 
 	public MIProcessAdapter(String[] args, IProgressMonitor monitor) throws IOException {
-		this(args, 0, monitor);
+		this(args, 0, 0, monitor);
 	}
 
-	public MIProcessAdapter(String[] args, int launchTimeout, IProgressMonitor monitor) throws IOException {
-		fGDBProcess = getGDBProcess(args, launchTimeout, monitor);
-		commandTimeout = MIPlugin.getCommandTimeout();
+	public MIProcessAdapter(String[] args, int gdbLaunchTimeout, int gdbCommandTimeout, IProgressMonitor monitor) throws IOException {
+		fGDBProcess = getGDBProcess(args, gdbLaunchTimeout, monitor);
+		commandTimeout = gdbCommandTimeout;
 	}
 
 	/**

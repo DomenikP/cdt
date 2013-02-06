@@ -623,7 +623,7 @@ public class MIPlugin extends Plugin {
 	 *            status to log
 	 */
 	public static void log( IStatus status ) {
-		getDefault().getLog().log( status );
+		System.err.println(status.toString());
 	}
 
 	/**

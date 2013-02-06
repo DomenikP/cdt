@@ -464,6 +464,6 @@ public class CommandFactory {
 	}
 	
 	public MIProcess createMIProcess(String[] args, int launchTimeout, IProgressMonitor monitor) throws IOException {
-		return new MIProcessAdapter(args, launchTimeout, monitor);
+		return new MIProcessAdapter(args, launchTimeout, launchTimeout*2, monitor);
 	}
 }

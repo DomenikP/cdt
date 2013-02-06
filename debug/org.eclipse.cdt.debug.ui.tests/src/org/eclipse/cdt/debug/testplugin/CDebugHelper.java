@@ -82,6 +82,18 @@ public class CDebugHelper {
 		return(session);
 	}
 	
+	
+	/**
+	 * Creates a ICDISession.
+	 */
+	@SuppressWarnings("deprecation")
+	public static ICDISession createSession(String exe, int launchTimeout, int commandTimeout) throws IOException,
+			MIException {
+		MIPlugin mi = new MIPlugin();
+		mi = MIPlugin.getDefault();
+		return mi.createCSession(null, MIVersion.MI1, new File(exe), new File(
+				"."), null, null, launchTimeout, commandTimeout);
+	}
 
 }
 
